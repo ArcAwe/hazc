@@ -2,7 +2,7 @@
 import socket
 import ssl
 
-TCP_IP = '127.0.0.1'
+TCP_IP = '192.168.0.10'
 TCP_PORT = 5005
 BUFFER_SIZE = 1024
 MESSAGE = "Hello, World!"
@@ -10,7 +10,7 @@ MESSAGE = "Hello, World!"
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(10)
 
-wrappedSocket = ssl.wrap_socket(s, ssl_version=ssl.PROTOCOL_SSLv23, ciphers="ADH-AES256-SHA")
+wrappedSocket = ssl.wrap_socket(s, ssl_version=ssl.PROTOCOL_TLSv1, ciphers="ADH-AES256-SHA")
 
 wrappedSocket.connect((TCP_IP, TCP_PORT))
 wrappedSocket.send(MESSAGE.encode())
