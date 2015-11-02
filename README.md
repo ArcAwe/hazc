@@ -16,26 +16,26 @@ NOTE: I will be adding handlers for other languages. Eventually...
 
 ### Simple example
 From your server running python3:
-'''
+```python
 #/usr/home/me/project/hazc-python.py
 from hazc import *
 home_control = hazc.hazc_master()
 home_control.start()
-'''
+```
 
-'''
+```text
 #/etc/
 ...
 document-root:/usr/home/me/project/web/
 ...
-'''
+```
 
 From your thermostat running python3 on a Raspberry Pi:
-'''
+```python
 from hazc import *
 network_interface = hazc.hazc_device()
 network_interface.add
-'''
+```
 
 ## Protocol
 There are two main portions of this project:
@@ -57,17 +57,17 @@ Version 1 or less requires the following commands to exist:
 - shutdown! power down the device - useful for gracefully shutting down an embedded device before pulling the power cord.
 
 And 1 or more of the following:
-- set-[some config]:[type of value] This is where your program describes the interfaces to the HAZC system. It is up to you to handle input validation. Example '''set-color:int''' or '''set-temp:float''' or '''set-lights:bool'''
+- set-[some config]:[type of value] This is where your program describes the interfaces to the HAZC system. It is up to you to handle input validation. Example ```set-color:int``` or ```set-temp:float``` or ```set-lights:bool```
 
 #### Commands in-depth
 - version? Returns a float
-- commands? Returns a semicolon-delimitated string of commands, e.g. '''version?;commands?;status?;shutdown!;set-lights:bool'''
-- status? Returns a list of all configs and possibly other status values: '''lights,TRUE;current_temp,30.3;temp_unit,c'''
+- commands? Returns a semicolon-delimitated string of commands, e.g. ```version?;commands?;status?;shutdown!;set-lights:bool```
+- status? Returns a list of all configs and possibly other status values: ```lights,TRUE;current_temp,30.3;temp_unit,c```
 - shutdown! Returns a 'goodbye!' and removes the service from zeroconf then powers down
 - set-[some config]:[some value] The master will determine what configs are available via the commands? command and response. Obviously, the value sent to the device must be of the type previously announced. Returns TRUE on success.
 
 #### Example TCP stream:
-'''
+```
 Connection established at 192.168.0.20
 master:version?
 device:1.0
@@ -77,4 +77,4 @@ master:status?
 device:lights,TRUE;desired_temp,68.5;temp_unit,f;current_temp,70.4
 master:set-lights:FALSE
 device:TRUE
-'''
+```
