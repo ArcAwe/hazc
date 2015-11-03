@@ -8,5 +8,12 @@ If you know how to get apache to execute python scripts, skip to step 2. This is
 #/etc/apache2/sites-available/hazc.conf
 <VirtualHost 192.168.0.10:8080>
 	DocumentRoot /home/ArcAwe/Documents/hazc/web
+	
+	<Directory "/home/holland/Documents/hazc/web">
+		Options +ExecCGI
+		AddHandler cgi-script .py
+	</Directory>
+
+COPY THE NEW FILE
 '''
 sudo a2enmod cgi
