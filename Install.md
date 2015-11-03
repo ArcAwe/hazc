@@ -26,5 +26,8 @@ Listen 8080
 ##### 1B - Then execute the following commands:
 
 sudo a2enmod cgi
+
 sudo a2ensite hazc
+
 sudo service apache2 restart
+
