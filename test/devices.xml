@@ -1,0 +1,16 @@
+<devices>
+	<inftable>
+		<version>1.0</version>
+		<control>
+			<colorset>
+				<type>colorRGB</type>
+				<value>(20,100,250)</value>
+			</colorset>
+			<function>
+				<type>ENUM</type>
+				<enum>colorwheel,spin,static</enum>
+				<value>spin</value>
+			</function>
+		</control>
+	</inftable>
+</devices>
