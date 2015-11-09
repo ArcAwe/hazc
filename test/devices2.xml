@@ -7,11 +7,10 @@
 				<value>(20,100,250)</value>
 			</colorset>
 			<function>
-				<type>ENUM
-					<enum>colorwheel,spin,static</enum>
-				</type>
+				<type>ENUM</type>
+				<enum>colorwheel,spin,static</enum>
 				<value>spin</value>
 			</function>
 		</control>
 	</inftable>
-</devices>
+<new><version>1.0</version></new></devices>

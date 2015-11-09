@@ -18,6 +18,7 @@ def on_service_state_change(zeroconf, service_type, name, state_change):
     if state_change is ServiceStateChange.Added:
         info = zeroconf.get_service_info(service_type, name)
         if info:
+            print(info.name.split("._")[0])
             print("  Address: %s:%d" % (socket.inet_ntoa(info.address), info.port))
             print("  Weight: %d, priority: %d" % (info.weight, info.priority))
             print("  Server: %s" % (info.server,))
