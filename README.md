@@ -32,10 +32,26 @@ document-root:/usr/home/me/project/web/
 
 From your thermostat running python3 on a Raspberry Pi:
 ```python
-from hazc import *
-network_interface = hazc.hazc_device()
-network_interface.add
+import hazc
+network_interface = hazc.hazc_device('127.0.0.1')
+
+def updateColor(rgb):
+	#update LED colors, etc..
+	red = rgb[0]
+	green = rgb[1]
+	blue = rgb[2]
+	updateLeds(red,green,blue)
+
+#advertise the interface
+network_interface.addControl('ColorSet', hazc.RGB, updateColor)
+
+#Manually update the status
+color = [25,255,50]
+network_interface.setControl('ColorSet', color)
+
+network_interface.advertise()
 ```
+Now your device can be controlled by the web!
 
 ## Protocol
 There are two main portions of this project:

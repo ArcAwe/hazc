@@ -13,15 +13,19 @@ class hazc_master:
 
     global instance
 
-    def __init__(self, ipaddr):
-        global instance
-        instance = self
+    def __init__(self): #, ipaddr):
+#         global instance
+#         instance = self
+        
+        #ipaddr = 'localhost'
     
         self.config = configparser.ConfigParser()
         self.config.read('config.ini')
-        self.ip = ipaddr
+        #self.ip = ipaddr
         self.MSGLEN = 1024
         self.END_OF_MSG = '*'
+        
+        self.xmlpath = self.config['discovery']['xml_location']
         self.checkXML()
         
 #         self.xmlroot = ET.Element("root")
@@ -40,7 +44,7 @@ class hazc_master:
 #             while(1):
                 #loop
         finally:
-            zeroconf.close()
+            self.zeroconf.close()
 #             self.webcontrol.close() #May not be neccesary
         
         #self.bindConnection() #option2
@@ -88,7 +92,7 @@ class hazc_master:
         if msg < self.MSGLEN:
             while len(msg) < self.MSGLEN:
                 msg.append(self.END_OF_MSG)
-        else
+        else:
             return msg[0:self.MSGLEN]
         
     def senddata(self, sock, msg):
@@ -116,13 +120,16 @@ class hazc_master:
         
     def checkXML(self): #see if XML exists, otherwise create it.
 #         root = ET.Element("root")
-        if(not os.path.isfile(xmlpath)):
-            root = ET.Element('devices')
-            tree.write('devices.xml')
+        #if(not os.path.isfile(self.xmlpath)):
+        
+        #Set up a new clean XML - as loading one may have old devices
+        devices = ET.Element('devices')
+        tree = ET.ElementTree(devices)
+#             root = ET.Element('devices')
+        tree.write(self.xmlpath)
         
     def add_service_xml(self, info):
-        xmlpath = self.config['global']['xml_location']
-        tree = ET.parse(xmlpath)
+        tree = ET.parse(self.xmlpath)
         devices = tree.getroot()
         
         cleanname = info.split(self.config['global']['service_prefix'])[0]
@@ -136,7 +143,7 @@ class hazc_master:
         version.text = deviceAttribs['version']
         
         control = ET.SubElement(newservice, "control")
-        for controlsurface in deviceAttribs['controls']
+        for controlsurface in deviceAttribs['controls']:
             newsurface = ET.SubElement(control, controlsurface['name'])
             type = ET.SubElement(newsurface, "type")
             type.text = controlsurface['type']
@@ -149,9 +156,16 @@ class hazc_master:
 
         
 #         devices.append(newdevice)
-        tree.write(xmlpath)
+        tree.write(self.xmlpath)
         
     def remove_service(self, info):
+        tree = ET.parse(self.xmlpath)
+        devices = tree.getroot()
+        
+        cleanname = info.split(self.config['global']['service_prefix'])[0]
+        
+        devices.remove(devices.find(cleanname))
+        tree.write(self.xmlpath)
 
 class hazcListener(object):
 
