@@ -122,7 +122,6 @@ class hazc_master:
 #
 #         msg = b''.join(chunks)
 
-
         msgbytes = sock.recv(self.MSGLEN)
         msgstr = msgbytes.decode('utf-8')
         rmsg = msg.strip(self.END_OF_MSG)
