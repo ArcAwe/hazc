@@ -66,7 +66,13 @@ class hazc_master:
 
         self.senddata(s, "commands?")
         #retrieve commands as according to README
-        commands = recvdata(s)
+        commands = self.recvdata(s)
+        try:
+            s.shutdown(1)
+        finally:
+            s.close()
+
+        s.connect((ip,int(self.config['global']['port'])))
         #version 1 contains version? commands? status? shutdown!
         commandlist = self.parseconfigs(commands.split(';'))
         self.senddata(s, "status?")
@@ -124,7 +130,7 @@ class hazc_master:
 
         msgbytes = sock.recv(self.MSGLEN)
         msgstr = msgbytes.decode('utf-8')
-        rmsg = msg.strip(self.END_OF_MSG)
+        rmsg = msgstr.strip(self.END_OF_MSG)
         print("->" + rmsg)
         return rmsg
 
