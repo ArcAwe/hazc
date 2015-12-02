@@ -3,7 +3,7 @@ from zeroconf import Zeroconf, ServiceInfo
 import socket
 import configparser
 import const
-import hazc_cmd
+import hazc_cmd as hc
 
 class hazc_device:
 
