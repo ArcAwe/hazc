@@ -1,10 +1,10 @@
 #!/usr/local/bin/python3ß
 
 class hazc_cmd:
-    NO_CMD = 1
+    NO_PARAM = 1
     BOOL = 2
     FLOAT = 3
-    CHAR = 4
+    STRING = 4
     INT = 5
     
     def __init__(self, title, function, paramtype=1):
@@ -19,13 +19,18 @@ class hazc_cmd:
             raise Exception()
             
     def execute(self, param):
-        if(param == 1):
+        if(paramtype == 1):
             self.function()
-        elif(param == 2):
+        elif(paramtype == 2):
             self.function(self.toBool(param))
-        elif(param == 3):
-            
-            
+        elif(paramtype == 3):
+            self.function(float(param))
+        elif(paramtype == 4):
+            self.function(param)
+        elif(paramtype == 5):
+            self.function(int(param))
+        else:
+            raise Exception
             
     def toBool(self, param):
         p = param.upper()

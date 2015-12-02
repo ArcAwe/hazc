@@ -3,9 +3,16 @@ from zeroconf import Zeroconf, ServiceInfo
 import socket
 import configparser
 import const
-import hazc_cmd as hc
+import hazc_cmd
 
 class hazc_device:
+    
+    #Forward constants
+    NO_PARAM = hazc_cmd.NO_PARAM
+    BOOL = hazc_cmd.BOOL
+    FLOAT = hazc_cmd.FLOAT
+    STRING = hazc_cmd.STRING
+    INT = hazc_cmd.INT
 
     def __init__(self, ipaddr):
         self.version = "0.1"
@@ -15,13 +22,36 @@ class hazc_device:
         self.END_OF_MSG = '*'
         self.ip = ipaddr
         self.buffer = 20
-        self.commands = {'version?':self.version_cmd,'commands?':self.commands_cmd,'status?':self.status_cmd}
+#         self.commands = {'version?':self.version_cmd,'commands?':self.commands_cmd,'status?':self.status_cmd}
         
-        hcvc = hazc_cmd.hazc_cmd('version?',self.version_cmd
-        self.commands2 = {'version?': hcvc, 
+        hcvc = hazc_cmd.hazc_cmd('version?',self.version_cmd, NO_PARAM)
+        hccc = hazc_cmd.hazc_cmd('commands?', self.commands_cmd, NO_PARAM)
+        hcsc = hazc_cmd.hazc_cmd('status?', self.status_cmd, STRING)
+        self.commands = {'version?': hcvc, 'commands?': hccc, 'status?': hcsc}
+        
+        # probably want to add a debug log status
+        self.status = {'exec_status': self.exec_status}
 
-    def addFunction(self, name, handler, statushandler):
-        self.commands
+    #Adds a function - not as preferred as addControl
+    #Does NOT auto add status
+    def addFunction(self, name, handler, paramtype):
+        #log("This is not the preferred way to add controls, see addControl")
+        if not('?' in name or '!' in name):
+#            log("Function name requires a '?' or '!', assuming '!'")
+            name += '!'
+            
+        self.commands[name] = hazc_cmd.hazc_cmd(name, handler, paramtype)
+            
+    #Adds a control vector
+    #controlname should just be a name like 'temp' or 'position' - it'll be the same for the status
+    def addControl(self, controlname, handler, statushandler, paramtype=NO_PARAM):
+        cmd_name = 'set-'+controlname+'?'
+        self.commands[cmd_name] = hazc_cmd.hazc_cmd(cmd_name, handler, paramtype)
+        self.addStatus(controlname, statushandler)
+    
+    #adds a unique status not already included in control vector. name is just the name, as in 'temp'
+    def addStatus(self, name, handler):
+        self.status[name] = handler
 
     def advertise(self):
         postfix = self.config['global']['service_prefix']
@@ -72,11 +102,16 @@ class hazc_device:
 
     def handledata(self, data):
         command = self.cleanandstringdata(data)
+        param = self.getparam(command)
+        
         print('->' + command)
 
         replystr = "ERROR"
 
-        replystr = self.commands[command]()
+        if len(param) > 0:
+            replystr = self.commands[command].execute(param)
+        else:
+             replystr = self.commands[command].execute()
 
         print(replystr)
         self.reply(replystr)
@@ -92,16 +127,14 @@ class hazc_device:
     def cleanandstringdata(self, data):
         dstr = data.decode('utf-8')
         return dstr.strip(self.END_OF_MSG)
-        
-#     This adds a remotely-called function from the web control with no arguments.
-    def addCommand(self, function, title):
-        self.commands[title] = function
-        
-    def addCommand(self, function, title, argument_type):
-        self.commands[title] = function
-        
-    def addStatus(self, function, title):
     
+    def getparam(self, data):
+        if '?' in data:
+            return data.split('?')[-1]
+        elif '!' in data:
+            return data.split('!')[-1]
+        else:
+            return ''
 
     def bindConnection(self):
         try:
@@ -111,6 +144,9 @@ class hazc_device:
         except OSError as e:
             print(e)
             quit()
+            
+    def exec_status(self):
+        return "Running"
 
     def version_cmd(self):
         return self.version
@@ -121,5 +157,17 @@ class hazc_device:
             rstr += key + ";"
         return rstr
 
-    def status_cmd(self):
-        return "some status..."
+    def status_cmd(self, specific_status=''):
+        str = ''
+        if len(specific_status > 0):
+            str = self.status[specific_status]
+        else:
+            for st in self.status:
+                str += st + ',' + self.status[st]() + ';'
+        
+        return str[:self.MSGLEN-1]
+        
+    # Some debugging methods
+    def debug_cmds(self):
+        print("Commands: " + str(self.commands))
+        print("Statuses: " + str(self.status))
