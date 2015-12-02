@@ -2,8 +2,11 @@
 from zeroconf import Zeroconf, ServiceInfo
 import socket
 import configparser
+import const
+import hazc_cmd
 
 class hazc_device:
+
     def __init__(self, ipaddr):
         self.version = "0.1"
         self.config = configparser.ConfigParser()
@@ -13,6 +16,9 @@ class hazc_device:
         self.ip = ipaddr
         self.buffer = 20
         self.commands = {'version?':self.version_cmd,'commands?':self.commands_cmd,'status?':self.status_cmd}
+        
+        hcvc = hazc_cmd.hazc_cmd('version?',self.version_cmd
+        self.commands2 = {'version?': hcvc, 
 
     def addFunction(self, name, handler, statushandler):
         self.commands
@@ -86,6 +92,16 @@ class hazc_device:
     def cleanandstringdata(self, data):
         dstr = data.decode('utf-8')
         return dstr.strip(self.END_OF_MSG)
+        
+#     This adds a remotely-called function from the web control with no arguments.
+    def addCommand(self, function, title):
+        self.commands[title] = function
+        
+    def addCommand(self, function, title, argument_type):
+        self.commands[title] = function
+        
+    def addStatus(self, function, title):
+    
 
     def bindConnection(self):
         try:
