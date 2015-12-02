@@ -23,6 +23,8 @@ class hazc_master:
         self.MSGLEN = 1024
         self.END_OF_MSG = '*'
 
+        self.port = int(self.config['global']['port'])
+
         self.xmlpath = self.config['discovery']['xml_location']
         self.checkXML()
 
@@ -56,7 +58,7 @@ class hazc_master:
     def getInfo(self, ip):
         print("Getting info...")
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((ip,int(self.config['global']['port'])))
+        s.connect((ip,self.port))
 
         attr = {}
 
@@ -64,25 +66,35 @@ class hazc_master:
         version = self.recvdata(s)
         attr['version'] = version
 
+        s.close()
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((ip,self.port))
+
         self.senddata(s, "commands?")
         #retrieve commands as according to README
         commands = self.recvdata(s)
-        try:
-            s.shutdown(1)
-        finally:
-            s.close()
 
-        s.connect((ip,int(self.config['global']['port'])))
+        s.close()
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((ip,self.port))
+
+
+        #s.connect((ip,int(self.config['global']['port'])))
         #version 1 contains version? commands? status? shutdown!
         commandlist = self.parseconfigs(commands.split(';'))
         self.senddata(s, "status?")
+        status = self.recvdata(s)
         # control surfaces
         controls = list()
 
         attr['controls'] = controls
 
-        s.shutdown(1)
-        s.close()
+        try:
+            s.shutdown(1)
+        finally:
+            s.close()
 
         return attr
 

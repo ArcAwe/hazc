@@ -33,12 +33,11 @@ class hazc_device:
 
         try:
             while True:
-                try:
-                    print("Ready")
-                    self.conn, self.addr = self.webcontrol.accept()
-                    self.listen()
-                finally:
-                    self.conn.close()
+#                 try:
+                print("Ready")
+                self.conn, self.addr = self.webcontrol.accept()
+                self.listen()
+                self.conn.close()
         except KeyboardInterrupt:
             pass
         finally:
@@ -63,11 +62,11 @@ class hazc_device:
             rbytes += len(d)
 
 #         print data.decode('utf-8')
-        print(data)
         self.handledata(data)
 
     def handledata(self, data):
         command = self.cleanandstringdata(data)
+        print('->' + command)
 
         replystr = "ERROR"
 
@@ -102,7 +101,7 @@ class hazc_device:
 
     def commands_cmd(self):
         rstr = ""
-        for key, value in self.commands:
+        for key in self.commands:
             rstr += key + ";"
         return rstr
 
