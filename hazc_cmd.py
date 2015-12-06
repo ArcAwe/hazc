@@ -1,34 +1,34 @@
-#!/usr/local/bin/python3ß
+#!/usr/local/bin/python3
+
+NO_PARAM = 1
+BOOL = 2
+FLOAT = 3
+STRING = 4
+INT = 5
 
 class hazc_cmd:
-    NO_PARAM = 1
-    BOOL = 2
-    FLOAT = 3
-    STRING = 4
-    INT = 5
+#     NO_PARAM = 1
+#     BOOL = 2
+#     FLOAT = 3
+#     STRING = 4
+#     INT = 5
     
     def __init__(self, title, function, paramtype=1):
         self.title = title
         self.function = function
         self.paramtype = paramtype
-        
-    def execute(self):
-        if(self.param == 1):
-            self.function()
-        else 
-            raise Exception()
             
     def execute(self, param):
-        if(paramtype == 1):
-            self.function()
-        elif(paramtype == 2):
-            self.function(self.toBool(param))
-        elif(paramtype == 3):
-            self.function(float(param))
-        elif(paramtype == 4):
-            self.function(param)
-        elif(paramtype == 5):
-            self.function(int(param))
+        if(self.paramtype == 1):
+            return self.function()
+        elif(self.paramtype == 2):
+            return self.function(self.toBool(param))
+        elif(self.paramtype == 3):
+            return self.function(float(param))
+        elif(self.paramtype == 4):
+            return self.function(param)
+        elif(self.paramtype == 5):
+            return self.function(int(param))
         else:
             raise Exception
             

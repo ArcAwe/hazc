@@ -15,11 +15,11 @@ def changepower(lvl):
     global pwrlvl
     pwrlvl = lvl
     
-def getowerlevel():
+def getpowerlevel():
     global pwrlvl
     return str(pwrlvl)
 
-dev.addControl('powerlevel', changepower, getpowerlevel, hazc_device.INT)
+dev.addControl('powerlevel', changepower, getpowerlevel, dev.INT)
 
 
 

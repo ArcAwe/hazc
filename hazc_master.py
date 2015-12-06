@@ -8,6 +8,8 @@ import configparser
 import xml.etree.cElementTree as ET
 import os.path
 
+import pdb
+
 class hazc_master:
 #     global inst
 
@@ -33,6 +35,16 @@ class hazc_master:
 #         global inst
 #         inst = self
         #init the XML file
+        
+    #TODO: validate XML
+    def printprettyxml(self):
+        tree = ET.parse(self.xmlpath)
+        rough_string = ET.tostring(tree, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        
+        print('**********************************')
+        print(reparsed.toprettyxml(indent="\t"))
+        print('**********************************')
 
     #start searching - THE method to run
     def detectDevices(self):
@@ -41,8 +53,11 @@ class hazc_master:
         self.browser = ServiceBrowser(self.zeroconf, self.config['global']['service_prefix'], self.listener)
         try:
             input("Press enter to exit...\n\n")
+
+#             This allows pdb to work with an input
+#             import time
 #             while(1):
-                #loop
+#                 time.sleep(0.1)
         finally:
             self.zeroconf.close()
 #             self.webcontrol.close() #May not be neccesary
@@ -74,7 +89,10 @@ class hazc_master:
         self.senddata(s, "commands?")
         #retrieve commands as according to README
         commands = self.recvdata(s)
-
+        commandlist = self.parseconfigs(commands.split(';'))
+        
+        attr['controls'] = commandlist
+        
         s.close()
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -83,13 +101,14 @@ class hazc_master:
 
         #s.connect((ip,int(self.config['global']['port'])))
         #version 1 contains version? commands? status? shutdown!
-        commandlist = self.parseconfigs(commands.split(';'))
         self.senddata(s, "status?")
         status = self.recvdata(s)
+        
+        
         # control surfaces
-        controls = list()
+        stats = status.split(';')
 
-        attr['controls'] = controls
+        attr['statuses'] = stats
 
         try:
             s.shutdown(1)
@@ -98,11 +117,14 @@ class hazc_master:
 
         return attr
 
+    #maybe we don't want to remove the "set-" part
     def parseconfigs(self, cmdlist):
         confs = list()
         for str in cmdlist:
-            if(str[0:4] is "set-"):
-                confs.append(str[4:])
+#             str.split(':')[0]
+#             if(str[0:4] is "set-"):
+#                 confs.append(str[4:])
+            confs.append(str)
         return confs
 
     def fixmsglength(self, msg):
@@ -170,21 +192,50 @@ class hazc_master:
         version = ET.SubElement(newservice, "version")
         version.text = deviceAttribs['version']
 
-        control = ET.SubElement(newservice, "control")
-        for controlsurface in deviceAttribs['controls']:
-            newsurface = ET.SubElement(control, controlsurface['name'])
-            type = ET.SubElement(newsurface, "type")
-            type.text = controlsurface['type']
-            if(type.text == "ENUM"):
-                enum = ET.SubElement(type, "enum")
-                enum.text = controlsurface['enum']
-            value = ET.SubElement(newsurface, "value")
-            value.text = controlsurface['value']
+#         pdb.set_trace()
 
+        control = ET.SubElement(newservice, "controls")
+        
+        for controlsurface in deviceAttribs['controls']:
+            # import pdb; pdb.set_trace()
+            
+            controlsplit = controlsurface.split(':')
+            
+            if len(controlsplit[0]) > 0:
+            
+                newsurface = ET.SubElement(control, controlsplit[0])
+            
+                #TODO: fix the various commands that don't take parameters
+                if ':' in controlsplit :
+                    cparam = ET.SubElement(newsurface, "parameter")
+                    cparam.text = controlsplit[1]
+            
+                    #TODO: implement ENUMs
+                    if(cparam.text == "ENUM"):
+                        enum = ET.SubElement(type, "enum")
+                        enum.text = controlsurface['enum']
+
+        stattree = ET.SubElement(newservice, "statuses")
+        
+        for stat in deviceAttribs['statuses']:
+            statsplit = stat.split(',')
+            statname = statsplit[0]
+            if len(statname) > 0:
+                substattree = ET.SubElement(stattree, statname)
+            
+                if ',' in stat:
+                    statvalue = statsplit[1]
+                    statval = ET.SubElement(substattree, "VALUE")
+                    statval.text = statvalue
+            
+            
+            
 
 
 #         devices.append(newdevice)
         tree.write(self.xmlpath)
+        
+#         self.printprettyxml()
 
     def remove_service_xml(self, info):
         tree = ET.parse(self.xmlpath)
@@ -193,6 +244,10 @@ class hazc_master:
         cleanname = info.split(self.config['global']['service_prefix'])[0]
 
         devices.remove(devices.find(cleanname))
+        
+        #lets make it readable for now
+        roughstring = ET.tostring(tree, 'utf-8')
+        
         tree.write(self.xmlpath)
 
 class hazcListener(object):

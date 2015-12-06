@@ -2,8 +2,9 @@
 from zeroconf import Zeroconf, ServiceInfo
 import socket
 import configparser
-import const
-import hazc_cmd
+from . import hazc_cmd
+
+import pdb
 
 class hazc_device:
     
@@ -24,10 +25,10 @@ class hazc_device:
         self.buffer = 20
 #         self.commands = {'version?':self.version_cmd,'commands?':self.commands_cmd,'status?':self.status_cmd}
         
-        hcvc = hazc_cmd.hazc_cmd('version?',self.version_cmd, NO_PARAM)
-        hccc = hazc_cmd.hazc_cmd('commands?', self.commands_cmd, NO_PARAM)
-        hcsc = hazc_cmd.hazc_cmd('status?', self.status_cmd, STRING)
-        self.commands = {'version?': hcvc, 'commands?': hccc, 'status?': hcsc}
+        hcvc = hazc_cmd.hazc_cmd('version?', self.version_cmd, self.NO_PARAM)
+        hccc = hazc_cmd.hazc_cmd('commands?', self.commands_cmd, self.NO_PARAM)
+        hcsc = hazc_cmd.hazc_cmd('status?', self.status_cmd, self.STRING)
+        self.commands = {'version': hcvc, 'commands': hccc, 'status': hcsc}
         
         # probably want to add a debug log status
         self.status = {'exec_status': self.exec_status}
@@ -45,8 +46,8 @@ class hazc_device:
     #Adds a control vector
     #controlname should just be a name like 'temp' or 'position' - it'll be the same for the status
     def addControl(self, controlname, handler, statushandler, paramtype=NO_PARAM):
-        cmd_name = 'set-'+controlname+'?'
-        self.commands[cmd_name] = hazc_cmd.hazc_cmd(cmd_name, handler, paramtype)
+        cmd_name = 'set-'+controlname
+        self.commands[cmd_name] = hazc_cmd.hazc_cmd(cmd_name+'?', handler, paramtype)
         self.addStatus(controlname, statushandler)
     
     #adds a unique status not already included in control vector. name is just the name, as in 'temp'
@@ -101,17 +102,13 @@ class hazc_device:
         self.handledata(data)
 
     def handledata(self, data):
-        command = self.cleanandstringdata(data)
-        param = self.getparam(command)
-        
-        print('->' + command)
+        command, param = self.cleanandstringdata(data)
+        print('->' + command + ';' + param)
 
-        replystr = "ERROR"
+#         replystr = "ERROR"
 
-        if len(param) > 0:
-            replystr = self.commands[command].execute(param)
-        else:
-             replystr = self.commands[command].execute()
+        replystr = self.commands[command].execute(param)
+#         replystr = self.commands['version'].execute('')
 
         print(replystr)
         self.reply(replystr)
@@ -126,15 +123,19 @@ class hazc_device:
 
     def cleanandstringdata(self, data):
         dstr = data.decode('utf-8')
-        return dstr.strip(self.END_OF_MSG)
-    
-    def getparam(self, data):
-        if '?' in data:
-            return data.split('?')[-1]
-        elif '!' in data:
-            return data.split('!')[-1]
+        full = dstr.strip(self.END_OF_MSG)
+        if '?' in full:
+            li = full.split('?')
+            param = li[-1]
+            cmd = li[0]
+        elif '!' in full:
+            li = full.split('!')
+            param = li[-1]
+            cmd = li[0]
         else:
-            return ''
+            param = ''
+            cmd = full
+        return (cmd, param)
 
     def bindConnection(self):
         try:
@@ -150,16 +151,32 @@ class hazc_device:
 
     def version_cmd(self):
         return self.version
+        
+    def paramtype_tostring(self, paramnum):
+        if paramnum == self.BOOL:
+            return 'BOOL'
+        elif paramnum == self.FLOAT:
+            return 'FLOAT'
+        elif paramnum == self.STRING:
+            return 'STRING'
+        elif paramnum == self.INT:
+            return 'INT'
+        else:
+            return 'PARAM_ERROR'
 
     def commands_cmd(self):
         rstr = ""
         for key in self.commands:
-            rstr += key + ";"
+            rstr += key
+            if self.commands[key].paramtype is not self.NO_PARAM:
+#                 pdb.set_trace()
+                rstr += ':' + self.paramtype_tostring(self.commands[key].paramtype)
+            rstr += ";"
         return rstr
 
     def status_cmd(self, specific_status=''):
         str = ''
-        if len(specific_status > 0):
+        if len(specific_status) > 0:
             str = self.status[specific_status]
         else:
             for st in self.status:
