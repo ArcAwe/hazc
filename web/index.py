@@ -4,9 +4,22 @@
 import cgitb, sys, socket
 cgitb.enable()
 
-# OPTION 1: Read from XML file
+import xml.etree.cElementTree as ET
 
+# OPTION 1: Read from XML files as it's own thread
+tree = ET.parse('devices.xml')
+root = tree.getRoot()
 
-# OPTION 2: Really this is redirecting/interpreting web calls, so that it is more extensible and is easier to install
+print("<table>")
+print("<tr><td>Name</td><td>Description</td></tr>")
+for device in root:
+    print("<tr>")
+    
+    print("<td>" + device.tag + "</td>")
+    
+    print("<td>" + device.tag + "</td>")
+    
+    print("</tr>")
+    
+print("</table>")
 
-socket.socket(socket.AF_INET, socket.SOCK_STREAM)

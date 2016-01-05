@@ -8,7 +8,7 @@ import configparser
 import xml.etree.cElementTree as ET
 import os.path
 
-import pdb
+# import pdb
 
 class hazc_master:
 #     global inst
@@ -261,6 +261,7 @@ class hazcListener(object):
 
     def add_service(self, zeroconf, type, name):
         info = zeroconf.get_service_info(type, name)
+#         pdb.set_trace()
         print("Service %s added, service info: %s" % (name, info))
         # Add to XML
         self.hazc_master.add_service_xml(info)

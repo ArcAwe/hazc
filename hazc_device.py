@@ -4,7 +4,7 @@ import socket
 import configparser
 from . import hazc_cmd
 
-import pdb
+# import pdb
 
 class hazc_device:
     
@@ -14,6 +14,9 @@ class hazc_device:
     FLOAT = hazc_cmd.FLOAT
     STRING = hazc_cmd.STRING
     INT = hazc_cmd.INT
+    
+    global running
+    running = False
 
     def __init__(self, ipaddr):
         self.version = "0.1"
@@ -36,6 +39,7 @@ class hazc_device:
     #Adds a function - not as preferred as addControl
     #Does NOT auto add status
     def addFunction(self, name, handler, paramtype):
+#         pdb.settrace()
         #log("This is not the preferred way to add controls, see addControl")
         if not('?' in name or '!' in name):
 #            log("Function name requires a '?' or '!', assuming '!'")
