@@ -47,8 +47,11 @@ class hazc_master:
         print('**********************************')
 
     #start searching - THE method to run
-    def detectDevices(self):
-        self.zeroconf = Zeroconf(("eth0",3))
+    def detectDevices(self, interface=(None, None)):
+        if interface[0] == None:
+            self.zeroconf = Zeroconf()
+        else
+            self.zeroconf = Zeroconf(interface)
         self.listener = hazcListener(self)
         self.browser = ServiceBrowser(self.zeroconf, self.config['global']['service_prefix'], self.listener)
         try:
