@@ -50,7 +50,7 @@ class hazc_master:
     def detectDevices(self, interface=(None, None)):
         if interface[0] == None:
             self.zeroconf = Zeroconf()
-        else
+        else:
             self.zeroconf = Zeroconf(interface)
         self.listener = hazcListener(self)
         self.browser = ServiceBrowser(self.zeroconf, self.config['global']['service_prefix'], self.listener)

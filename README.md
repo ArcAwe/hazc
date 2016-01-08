@@ -20,7 +20,7 @@ From your server running python3:
 #/usr/home/me/project/hazc-python.py
 from hazc import *
 home_control = hazc.hazc_master()
-home_control.start()
+home_control.detectDevices()
 ```
 
 ```text
@@ -34,6 +34,8 @@ From your thermostat running python3 on a Raspberry Pi:
 ```python
 import hazc
 network_interface = hazc.hazc_device('127.0.0.1')
+
+TODO: let it figure out what IP address
 
 def updateColor(rgb):
 	#update LED colors, etc..
@@ -64,6 +66,8 @@ NOTE: Theoretically, there can be multiple Masters if you want redundancy, but t
 ### Discovery
 The master uses zeroconf to locate any operating HAZC devices. After finding an announced HAZC service, it asks a series of questions to figure out what commands it takes and how to determine its status. 
 First it asks for 'version?' to allow for future backwards-compatibility. Secondly it asks 'commands?' to detect how to command the connected device. Lastly, it asks for the status to detect the current state of the device and determine what statuses it can announce.
+
+NOTE: You can specify which interface to discover on by providing a tuple; ([ip address], proto number) Proto number is 3 on linux devices.
 
 #### Required commands
 Version 1 or less requires the following commands to exist:
