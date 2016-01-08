@@ -48,7 +48,7 @@ class hazc_master:
 
     #start searching - THE method to run
     def detectDevices(self):
-        self.zeroconf = Zeroconf()
+        self.zeroconf = Zeroconf("192.168.0.10")
         self.listener = hazcListener(self)
         self.browser = ServiceBrowser(self.zeroconf, self.config['global']['service_prefix'], self.listener)
         try:
@@ -64,10 +64,10 @@ class hazc_master:
 
         #self.bindConnection() #option2
 
-    def bindConnection(self):
-        self.webcontrol = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.webcontrol.bind(('localhost', 8796))
-        self.webcontrol.listen(1)
+#     def bindConnection(self):
+#         self.webcontrol = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#         self.webcontrol.bind(('localhost', 8796))
+#         self.webcontrol.listen(1)
 
 #     TODO: send variable length packets
     def getInfo(self, ip):

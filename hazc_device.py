@@ -65,8 +65,6 @@ class hazc_device:
         info = ServiceInfo(postfix, self.config['device']['hostname']+"."+postfix,
                        socket.inet_aton(self.ip), self.port, 0, 0,
                        {'info': self.config['device']['description']}, "hazc.local.")
-        
-        print(info)
 
         self.bindConnection()
 

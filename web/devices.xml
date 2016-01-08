@@ -1,1 +1,1 @@
-<devices />
+<devices><testhazcserv.><version>0.1</version><controls><set-powerlevel /><status /><commands /><version /></controls><statuses><powerlevel><VALUE>0</VALUE></powerlevel><time><VALUE>2016-01-08 04:48:53</VALUE></time><exec_status><VALUE>Running</VALUE></exec_status></statuses></testhazcserv.></devices>
