@@ -48,7 +48,7 @@ class hazc_master:
 
     #start searching - THE method to run
     def detectDevices(self):
-        self.zeroconf = Zeroconf("192.168.0.10")
+        self.zeroconf = Zeroconf(("eth0",3))
         self.listener = hazcListener(self)
         self.browser = ServiceBrowser(self.zeroconf, self.config['global']['service_prefix'], self.listener)
         try:
