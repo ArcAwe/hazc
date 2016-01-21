@@ -30,6 +30,8 @@ class hazc_master:
         self.xmlpath = self.config['discovery']['xml_location']
         self.checkXML()
 
+        self.debugcmdline = False
+
 #         self.xmlroot = ET.Element("root")
 
 #         global inst
@@ -46,6 +48,12 @@ class hazc_master:
         print(reparsed.toprettyxml(indent="\t"))
         print('**********************************')
 
+    def setDebugCommandLine(self, status):
+        if(status == True):
+            self.debugcmdline = True
+        else:
+            self.debugcmdline = False
+
     #start searching - THE method to run
     def detectDevices(self, bind_addr=None):
         if bind_addr == None:
@@ -55,7 +63,12 @@ class hazc_master:
         self.listener = hazcListener(self)
         self.browser = ServiceBrowser(self.zeroconf, self.config['global']['service_prefix'], self.listener)
         try:
-            input("Press enter to exit...\n\n")
+            if(self.debugcmdline):
+                while(1):
+                    pass
+            else:
+                input("Press enter to exit...\n\n")
+            
 
 #             This allows pdb to work with an input
 #             import time
@@ -141,7 +154,7 @@ class hazc_master:
             return msg[0:self.MSGLEN]
 
     def senddata(self, sock, msg):
-        print(msg)
+        if(not self.debugcmdline): print(msg)
         bmsg = self.fixmsglength(msg).encode('utf-8')
         totalsent = 0
         while totalsent < self.MSGLEN:
@@ -168,7 +181,7 @@ class hazc_master:
         msgbytes = sock.recv(self.MSGLEN)
         msgstr = msgbytes.decode('utf-8')
         rmsg = msgstr.strip(self.END_OF_MSG)
-        print("->" + rmsg)
+        if(not self.debugcmdline): print("->" + rmsg)
         return rmsg
 
     def checkXML(self): #see if XML exists, otherwise create it.
@@ -182,76 +195,90 @@ class hazc_master:
         tree.write(self.xmlpath)
 
     def add_service_xml(self, info):
-        tree = ET.parse(self.xmlpath)
-        devices = tree.getroot()
+        if(self.debugcmdline):
+            cleanname = info.name.split(self.config['global']['service_prefix'])[0]
+            print("Connected to " + cleanname)
+            ip = socket.inet_ntoa(info.address)
+            print("Type 'quit' to end")
+            line = ''
+            while(line != 'quit'):
+                line = input("$")
+                if(not line=='quit'):
+                    dsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    dsock.connect((ip,self.port))
+                    self.senddata(dsock, line)
+                    response = self.recvdata(dsock)
+                    print(">"+response)
+                    dsock.close()
+        else:
+            tree = ET.parse(self.xmlpath)
+            devices = tree.getroot()
 
-        cleanname = info.name.split(self.config['global']['service_prefix'])[0]
-        newservice = ET.SubElement(devices, cleanname)
+            cleanname = info.name.split(self.config['global']['service_prefix'])[0]
+            newservice = ET.SubElement(devices, cleanname)
 
 
-#         tree = ET.ElementTree(self.xmlroot)
-        deviceAttribs = self.getInfo(socket.inet_ntoa(info.address))
+    #         tree = ET.ElementTree(self.xmlroot)
+            deviceAttribs = self.getInfo(socket.inet_ntoa(info.address))
 
-        version = ET.SubElement(newservice, "version")
-        version.text = deviceAttribs['version']
+            version = ET.SubElement(newservice, "version")
+            version.text = deviceAttribs['version']
 
-#         pdb.set_trace()
+    #         pdb.set_trace()
 
-        control = ET.SubElement(newservice, "controls")
+            control = ET.SubElement(newservice, "controls")
         
-        for controlsurface in deviceAttribs['controls']:
-            # import pdb; pdb.set_trace()
+            for controlsurface in deviceAttribs['controls']:
+                # import pdb; pdb.set_trace()
             
-            controlsplit = controlsurface.split(':')
+                controlsplit = controlsurface.split(':')
             
-            if len(controlsplit[0]) > 0:
+                if len(controlsplit[0]) > 0:
             
-                newsurface = ET.SubElement(control, controlsplit[0])
+                    newsurface = ET.SubElement(control, controlsplit[0])
             
-                #TODO: fix the various commands that don't take parameters
-                if ':' in controlsplit :
-                    cparam = ET.SubElement(newsurface, "parameter")
-                    cparam.text = controlsplit[1]
+                    #TODO: fix the various commands that don't take parameters
+                    if ':' in controlsplit :
+                        cparam = ET.SubElement(newsurface, "parameter")
+                        cparam.text = controlsplit[1]
             
-                    #TODO: implement ENUMs
-                    if(cparam.text == "ENUM"):
-                        enum = ET.SubElement(type, "enum")
-                        enum.text = controlsurface['enum']
+                        #TODO: implement ENUMs
+                        if(cparam.text == "ENUM"):
+                            enum = ET.SubElement(type, "enum")
+                            enum.text = controlsurface['enum']
 
-        stattree = ET.SubElement(newservice, "statuses")
+            stattree = ET.SubElement(newservice, "statuses")
         
-        for stat in deviceAttribs['statuses']:
-            statsplit = stat.split(',')
-            statname = statsplit[0]
-            if len(statname) > 0:
-                substattree = ET.SubElement(stattree, statname)
+            for stat in deviceAttribs['statuses']:
+                statsplit = stat.split(',')
+                statname = statsplit[0]
+                if len(statname) > 0:
+                    substattree = ET.SubElement(stattree, statname)
             
-                if ',' in stat:
-                    statvalue = statsplit[1]
-                    statval = ET.SubElement(substattree, "VALUE")
-                    statval.text = statvalue
-            
-            
-            
+                    if ',' in stat:
+                        statvalue = statsplit[1]
+                        statval = ET.SubElement(substattree, "VALUE")
+                        statval.text = statvalue
 
 
-#         devices.append(newdevice)
-        tree.write(self.xmlpath)
+    #         devices.append(newdevice)
+            tree.write(self.xmlpath)
         
-#         self.printprettyxml()
+    #         self.printprettyxml()
 
     def remove_service_xml(self, info):
-        tree = ET.parse(self.xmlpath)
-        devices = tree.getroot()
+        if(not debugcmdline):
+            tree = ET.parse(self.xmlpath)
+            devices = tree.getroot()
 
-        cleanname = info.split(self.config['global']['service_prefix'])[0]
+            cleanname = info.split(self.config['global']['service_prefix'])[0]
 
-        devices.remove(devices.find(cleanname))
+            devices.remove(devices.find(cleanname))
         
-        #lets make it readable for now
-        roughstring = ET.tostring(tree, 'utf-8')
+            #lets make it readable for now
+            roughstring = ET.tostring(tree, 'utf-8')
         
-        tree.write(self.xmlpath)
+            tree.write(self.xmlpath)
 
 class hazcListener(object):
     def __init__(self, hmaster):

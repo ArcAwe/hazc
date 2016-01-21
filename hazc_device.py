@@ -110,9 +110,18 @@ class hazc_device:
         print('->' + command + ';' + param)
 
 #         replystr = "ERROR"
-
-        replystr = self.commands[command].execute(param)
+        try:
+            replystr = self.commands[command].execute(param)
+        except KeyError:
+            if(command==''):
+                command = "(empty string)"
+            print("ERROR! Unknown command: " + command)
+            replystr = ""
 #         replystr = self.commands['version'].execute('')
+        
+        if(replystr == None):
+            print("WARNING! " + command + " should return a string to send to the master. Sending 'NO_REPLY'")
+            replystr = 'NO_REPLY'
 
         print(replystr)
         self.reply(replystr)

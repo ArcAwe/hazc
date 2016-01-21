@@ -86,7 +86,7 @@ As a rule of thumb, any function that requires a response will end in ?. Command
 - commands? Returns a semicolon-delimitated string of commands, e.g. ```version?;commands?;status?;shutdown!;set-lights:bool```
 - status? Returns a list of all configs and possibly other status values: ```lights,TRUE;current_temp,30.3;temp_unit,c```
 - shutdown! Returns a 'goodbye!' and removes the service from zeroconf then powers down
-- set-[some config]:[some value] The master will determine what configs are available via the commands? command and response. Obviously, the value sent to the device must be of the type previously announced. Returns TRUE on success.
+- set-[some config]:[some value] The master will determine what configs are available via the commands? command and response. Obviously, the value sent to the device must be of the type previously announced. Return a String on success.
 
 ##### Parameters
 After being set first [explanation needed] they are sent following the command. They can only be sent one at a time. And they are always sent as strings and then interpreted by the master as according to the type of parameter. This is optional.
@@ -103,6 +103,6 @@ master:commands?
 device:version?;commands?;status?;shutdown!;set-lights:bool;set-desired_temp:float;set-temp_unit:char
 master:status?
 device:lights,TRUE;desired_temp,68.5;temp_unit,f;current_temp,70.4
-master:set-lights:FALSE
+master:set-lights!FALSE
 device:TRUE
 ```
